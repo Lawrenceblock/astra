@@ -151,20 +151,21 @@ jobs:
         env:
           CI: true
 
-      # tauri android init 会用模板默认图标重建 gen/android，必须在 init 之后再生成图标
+      # android init generates the project first; tauri icon then writes launcher icons into gen/android.
       - name: Generate Android launcher icons
         run: pnpm icons
 
+      # Verify the generated project icon itself. There is no committed src-tauri/icons/android source directory.
       - name: Verify Android launcher icon
         run: |
-          cmp src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher.png               src-tauri/gen/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test -s src-tauri/gen/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          echo "Android launcher icon exists."
 
       - name: Patch Android manifest
         run: node scripts/patch-android.mjs
 
       - name: Build Android APK (arm64)
         run: pnpm tauri android build --apk --debug --target aarch64
-
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
